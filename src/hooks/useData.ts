@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchStories } from "../services/github";
-import type { Story } from "../types/story";
-
-export type { Story };
+import type { CuentosResponse } from "../types/story";
+import { loadStories } from "../services/loadStories";
 
 export const useData = () => {
-  const [data, setData] = useState<Story[] | null>(null);
+  const [data, setData] = useState<CuentosResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -14,7 +12,8 @@ export const useData = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await fetchStories();
+
+      const result = await loadStories();
       if (check()) setData(result);
     } catch (err) {
       if (check()) {

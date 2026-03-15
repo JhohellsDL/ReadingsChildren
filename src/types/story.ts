@@ -1,8 +1,24 @@
+export interface Question {
+  id: string;
+  pregunta: string;
+  opciones: string[];
+  respuesta_correcta: number;
+  puntos: number;
+}
+
 export interface Story {
-  id: number;
+  id: string;
   titulo: string;
   categoria: string;
-  contenido: string;
+  descripcion: string;
   imagen: string;
-  fechaCreacion: string;
+  tiempo_lectura: string;
+  contenido: string;
+  preguntas: Question[];
+  puntos_totales: number;
+}
+
+export interface CuentosResponse {
+  version: number;
+  cuentos: Story[];
 }

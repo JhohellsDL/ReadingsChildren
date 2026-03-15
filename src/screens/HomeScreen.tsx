@@ -27,18 +27,20 @@ export default function HomeScreen() {
     );
   }
 
+  const cuentos = data?.cuentos ?? [];
+
   return (
     <FlatList
-      data={data ?? []}
-      keyExtractor={(item) => String(item.id)}
+      data={cuentos}
+      keyExtractor={(item) => item.id}
       onRefresh={refresh}
       refreshing={loading}
       renderItem={({ item }) => (
         <View style={styles.card}>
           <Text style={styles.categoria}>{item.categoria}</Text>
           <Text style={styles.titulo}>{item.titulo}</Text>
-          <Text style={styles.contenido}>{item.contenido}</Text>
-          <Text style={styles.fecha}>{item.fechaCreacion}</Text>
+          <Text style={styles.descripcion}>{item.descripcion}</Text>
+          <Text style={styles.tiempoLectura}>{item.tiempo_lectura}</Text>
         </View>
       )}
     />
@@ -66,6 +68,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 8,
   },
-  contenido: { color: "#e0e0e0", fontSize: 14, lineHeight: 20, marginTop: 4 },
-  fecha: { color: "#888", fontSize: 12, marginTop: 8 },
+  descripcion: { color: "#e0e0e0", fontSize: 14, lineHeight: 20, marginTop: 4 },
+  tiempoLectura: { color: "#888", fontSize: 12, marginTop: 8 },
 });
