@@ -1,73 +1,108 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import { useData } from "../hooks/useData";
+import { theme } from "../theme";
+import { getPerfilUser } from "../services";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StoryCard } from "./components/StoryCard";
+import { useProgreso } from "../hooks/useProgreso";
+import { HeaderUser } from "./components/HeaderUser";
+import { PerfilUser } from "../types";
 
-export default function HomeScreen() {
+export const HomeScreen = ({ navigation }: { navigation: any }) => {
   const { data, loading, error, refresh } = useData();
+  const { progreso, puntajeGlobal, refrescar } = useProgreso();
+  const [perfil, setPerfil] = useState<PerfilUser | null>(null);
+  const insets = useSafeAreaInsets();
 
-  if (loading) {
+  useEffect(() => {
+    getPerfilUser().then((perfil) => {
+      if (perfil) {
+        setPerfil(perfil);
+        refrescar();
+      }
+    });
+  }, []);
+
+  if (loading && data?.cuentos.length === 0) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0066FF" />
+      <View style={s.center}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text style={s.cargandoTexto}>Cargando cuentos...</Text>
       </View>
     );
   }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>Error: {error?.message}</Text>
-      </View>
-    );
-  }
-
-  const cuentos = data?.cuentos ?? [];
 
   return (
-    <FlatList
-      data={cuentos}
-      keyExtractor={(item) => item.id}
-      onRefresh={refresh}
-      refreshing={loading}
-      renderItem={({ item }) => (
-        <View style={styles.card}>
-          <Text style={styles.categoria}>{item.categoria}</Text>
-          <Text style={styles.titulo}>{item.titulo}</Text>
-          <Text style={styles.descripcion}>{item.descripcion}</Text>
-          <Text style={styles.tiempoLectura}>{item.tiempo_lectura}</Text>
-        </View>
-      )}
-    />
+    <View style={[s.container, { paddingTop: insets.top }]}>
+      <FlatList
+        data={data?.cuentos}
+        keyExtractor={(item) => item.id}
+        onRefresh={refresh}
+        refreshing={loading}
+        contentContainerStyle={s.lista}
+        ListHeaderComponent={
+          <View>
+            <HeaderUser perfil={perfil} puntajeGlobal={puntajeGlobal} />
+            {error && <Text style={s.errorAviso}>⚠️ {error.message}</Text>}
+            <Text style={s.seccion}>Todos los cuentos</Text>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <StoryCard
+            item={item}
+            navigation={navigation}
+            progreso={progreso.stories?.[item.id] ?? undefined}
+          />
+        )}
+      />
+    </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  error: { color: "red", fontSize: 16 },
-  card: {
-    backgroundColor: "#1e1e1e",
-    margin: 10,
-    padding: 15,
-    borderRadius: 10,
+const s = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 20,
   },
-  categoria: {
-    color: "#0066FF",
-    fontSize: 12,
-    fontWeight: "bold",
-    marginBottom: 4,
+  center: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  titulo: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
+  cargandoTexto: { color: theme.colors.textMuted, marginTop: 12 },
+  lista: { paddingBottom: 40 },
+  cacheAviso: {
+    color: theme.colors.warning,
+    fontSize: theme.fontSize.xs,
     marginBottom: 8,
+    textAlign: "center",
   },
-  descripcion: { color: "#e0e0e0", fontSize: 14, lineHeight: 20, marginTop: 4 },
-  tiempoLectura: { color: "#888", fontSize: 12, marginTop: 8 },
+  errorAviso: {
+    color: theme.colors.error,
+    fontSize: theme.fontSize.xs,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  seccion: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: "700",
+    color: theme.colors.text,
+    marginVertical: 20,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: 18,
+    marginBottom: 16,
+    ...theme.neo,
+  },
 });
